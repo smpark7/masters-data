@@ -1,7 +1,7 @@
 flow_velocity=112.75 # cm/s
 pre_flow_velocity=112.75
-nt_scale=1e-15     # neutron flux scaling factor
-pre_scale=1e-9    # precursor scaling factor
+nt_scale=1#e-15     # neutron flux scaling factor
+pre_scale=1#e-9    # precursor scaling factor
 ini_temp=923     # initial temp
 diri_temp=923    # dirichlet BC temp
 ini_neut=1e14
@@ -20,58 +20,68 @@ ini_neut=1e14
 []
 
 [Mesh]
-  file = 'fuel-blanket-fine.e'
+  file = 'msfr-1-16-core-10cm.e'
 [../]
 
 [Problem]
   type = FEProblem
-  coord_type = RZ
-  rz_coord_axis = Y
+  # coord_type = RZ
+  # rz_coord_axis = Y
 []
 
 [Variables]
   [./group1]
     order = FIRST
     family = LAGRANGE
-    scaling = ${nt_scale}
+    # scaling = ${nt_scale}
   [../]
   [./group2]
     order = FIRST
     family = LAGRANGE
-    scaling = ${nt_scale}
+    # scaling = ${nt_scale}
   [../]
   [./group3]
     order = FIRST
     family = LAGRANGE
-    scaling = ${nt_scale}
+    # scaling = ${nt_scale}
   [../]
   [./group4]
     order = FIRST
     family = LAGRANGE
-    scaling = ${nt_scale}
+    # scaling = ${nt_scale}
   [../]
   [./group5]
     order = FIRST
     family = LAGRANGE
-    scaling = ${nt_scale}
+    # scaling = ${nt_scale}
   [../]
   [./group6]
     order = FIRST
     family = LAGRANGE
-    scaling = ${nt_scale}
+    # scaling = ${nt_scale}
   [../]
   [./temp]
     order = FIRST
     family = LAGRANGE
-    scaling = 1e-3
+    # scaling = 1e-3
   [../]
 []
+
+# [AuxVariables]
+#   [./temp_aux]
+#     order = FIRST
+#     family = LAGRANGE
+#     scaling = 1
+#     initial_condition = 923
+#     block = 'blanket inlet outlet absorb hx top_ref bottom_ref outer_ref'
+#   [../]
+# []
 
 [Precursors]
   [./pres]
     var_name_base = pre
-    block = 'fuel'
-    outlet_boundaries = 'fuel_top'
+    block = 'core'
+    outlet_boundaries = 'core_top'
     # prec_scale = 1
     constant_velocity_values = true
     u_def = 0
@@ -84,7 +94,7 @@ ini_neut=1e14
     loop_precs = true
     multi_app = loopApp
     is_loopapp = false
-    inlet_boundaries = 'fuel_bottom'
+    inlet_boundaries = 'core_bottom'
     scaling = ${pre_scale}
     # jac_test = true
   [../]
@@ -251,37 +261,37 @@ ini_neut=1e14
     type = DelayedNeutronSource
     variable = group1
     group_number = 1
-    block = 'fuel'
+    block = 'core'
   [../]
   [./delayed_group2]
     type = DelayedNeutronSource
     variable = group2
     group_number = 2
-    block = 'fuel'
+    block = 'core'
   [../]
   [./delayed_group3]
     type = DelayedNeutronSource
     variable = group3
     group_number = 3
-    block = 'fuel'
+    block = 'core'
   [../]
   [./delayed_group4]
     type = DelayedNeutronSource
     variable = group4
     group_number = 4
-    block = 'fuel'
+    block = 'core'
   [../]
   [./delayed_group5]
     type = DelayedNeutronSource
     variable = group5
     group_number = 5
-    block = 'fuel'
+    block = 'core'
   [../]
   [./delayed_group6]
     type = DelayedNeutronSource
     variable = group6
     group_number = 6
-    block = 'fuel'
+    block = 'core'
   [../]
 
   # Temperature
@@ -293,76 +303,78 @@ ini_neut=1e14
     type = MatDiffusion
     variable = temp
     D_name = 'k'
+    block = 'core'
   [../]
   [./temp_source]
     type = TransientFissionHeatSource
     nt_scale=1
     variable = temp
+    block = 'core'
   [../]
-  [./temp_advection_fuel]
+  [./temp_advection_core]
     type = ConservativeTemperatureAdvection
     velocity = '0 ${flow_velocity} 0'
     variable = temp
-    block = 'fuel'
+    block = 'core'
   [../]
 []
 
 [Materials]
-  [./fuel]
+  [./core]
     type = GenericMoltresMaterial
-    property_tables_root = '../data-st/st_fuel_'
+    property_tables_root = '../data/xs-data/group/msfr_full_core_core_'
     interp_type = 'spline'
-    # prop_names = 'cp'
-    # prop_values = '1355'
-    block = 'fuel'
+    prop_names = 'cp'
+    prop_values = '1555'
+    block = 'core'
   [../]
-  [./cp_fuel]
-    type = DerivativeParsedMaterial
-    f_name = cp
-    function = '-1111 + 2.78 * temp'    # kg cm-3
-    args = 'temp'
-    derivative_order = 1
-    block = 'fuel'
-  [../]
-  [./rho_fuel]
+  # [./cp_fuel]
+  #   type = DerivativeParsedMaterial
+  #   f_name = cp
+  #   function = '-1111 + 2.78 * temp'    # kg cm-3
+  #   args = 'temp'
+  #   derivative_order = 1
+  #   block = 'fuel'
+  # [../]
+  [./rho_core]
     type = DerivativeParsedMaterial
     f_name = rho
     function = '(4983.56 - .882 * temp) * .000001'    # kg cm-3
     args = 'temp'
     derivative_order = 1
-    block = 'fuel'
+    block = 'core'
   [../]
-  [./k_fuel]
+  [./k_core]
     type = ParsedMaterial
     f_name = k
     function = '(0.928 + 8.397e-5 * temp) * .01'
     args = 'temp'
-    block = 'fuel'
+    block = 'core'
   [../]
-  [./mu_fuel]
+  [./mu_core]
     type = ParsedMaterial
     f_name = mu
     function = 'rho * exp(3689 / temp) * 5.55e-8 * 10000'
     material_property_names = 'rho'
     args = 'temp'
-    block = 'fuel'
+    block = 'core'
   [../]
   [./blanket]
     type = GenericMoltresMaterial
-    property_tables_root = '../data-st/st_blanket_'
+    property_tables_root = '../data/xs-data/group/msfr_full_core_blanket_'
     interp_type = 'spline'
-    # prop_names = 'cp'
-    # prop_values = '1355'
+    prop_names = 'cp'
+    prop_values = '1555'
     block = 'blanket'
   [../]
-  [./cp_blanket]
-    type = DerivativeParsedMaterial
-    f_name = cp
-    function = '-1111 + 2.78 * temp'    # kg cm-3
-    args = 'temp'
-    derivative_order = 1
-    block = 'blanket'
-  [../]
+  # [./cp_blanket]
+  #   type = DerivativeParsedMaterial
+  #   f_name = cp
+  #   function = '-1111 + 2.78 * temp'    # kg cm-3
+  #   args = 'temp'
+  #   derivative_order = 1
+  #   block = 'blanket'
+  # [../]
   [./rho_blanket]
     type = DerivativeParsedMaterial
     f_name = rho
@@ -378,68 +390,145 @@ ini_neut=1e14
     args = 'temp'
     block = 'blanket'
   [../]
+  [./absorb]
+    type = GenericMoltresMaterial
+    property_tables_root = '../data/xs-data/group/msfr_full_core_absorb_'
+    interp_type = 'spline'
+    prop_names = 'cp'
+    prop_values = '1555'
+    block = 'absorb'
+  [../]
+  [./struc]
+    type = GenericMoltresMaterial
+    property_tables_root = '../data/xs-data/group/msfr_full_core_struc_'
+    interp_type = 'spline'
+    prop_names = 'cp'
+    prop_values = '1555'
+    block = 'bottom_ref outer_ref top_ref'
+  [../]
+  [./hx]
+    type = GenericMoltresMaterial
+    property_tables_root = '../data/xs-data/group/msfr_full_core_hx_'
+    interp_type = 'spline'
+    prop_names = 'cp'
+    prop_values = '1555'
+    block = 'hx'
+  [../]
+  [./inlet_outlet]
+    type = GenericMoltresMaterial
+    property_tables_root = '../data/xs-data/group/msfr_full_core_inlet_'
+    interp_type = 'spline'
+    prop_names = 'cp'
+    prop_values = '1555'
+    block = 'inlet outlet'
+  [../]
+  [./rho_inlet_outlet_hx]
+    type = DerivativeParsedMaterial
+    f_name = rho
+    function = '(4983.56 - .882 * temp) * .000001'    # kg cm-3
+    args = 'temp'
+    derivative_order = 1
+    block = 'inlet outlet hx'
+  [../]
+  [./rho_struc]
+    type = DerivativeParsedMaterial
+    f_name = rho
+    function = '.01 + 1e-9 * temp'    # kg cm-3
+    args = 'temp'
+    derivative_order = 1
+    block = 'bottom_ref outer_ref top_ref'
+  [../]
+  [./rho_absorb]
+    type = DerivativeParsedMaterial
+    f_name = rho
+    function = '.00252 + 1e-9 * temp'    # kg cm-3
+    args = 'temp'
+    derivative_order = 1
+    block = 'absorb'
+  [../]
+  # [./k_inlet_outlet]
+  #   type = ParsedMaterial
+  #   f_name = k
+  #   function = '(0.928 + 8.397e-5 * temp) * .01'
+  #   args = 'temp'
+  #   block = 'inlet outlet'
+  # [../]
 []
 
 [BCs]
-  [./temp_diri]
-    boundary = 'blanket_bottom'
-    type = DirichletBC
+  # [./temp_diri]
+  #   boundary = 'blanket_bottom'
+  #   type = DirichletBC
+  #   variable = temp
+  #   value = ${diri_temp}
+  # [../]
+  [./temp_core_outer]
+    boundary = 'core_outer'
+    type = NeumannBC
     variable = temp
-    value = ${diri_temp}
+    value = 0
   [../]
-  [./temp_fuel_bottom]
-    boundary = 'fuel_bottom'
+  [./temp_core_bottom]
+    boundary = 'core_bottom'
     type = PostprocessorDirichletBC
     postprocessor = inlet_mean_temp
     variable = temp
   [../]
-  [./temp_outer]
-    boundary = 'outer'
-    type = DirichletBC
-    value = ${diri_temp}
-    variable = temp
-  [../]
+  # [./temp_outer]
+  #   boundary = 'outer'
+  #   type = DirichletBC
+  #   value = ${diri_temp}
+  #   variable = temp
+  # [../]
   [./temp_advection_outlet]
-    boundary = 'fuel_top'
+    boundary = 'core_top'
     type = TemperatureOutflowBC
     variable = temp
     velocity = '0 ${flow_velocity} 0'
   [../]
   [./vacuum_group1]
     type = VacuumConcBC
-    boundary = 'fuel_bottom blanket_bottom fuel_top blanket_top outer'
+    boundary = 'bottom bottom_outer middle_outer top_outer top'
     variable = group1
   [../]
   [./vacuum_group2]
     type = VacuumConcBC
-    boundary = 'fuel_bottom blanket_bottom fuel_top blanket_top outer'
+    boundary = 'bottom bottom_outer middle_outer top_outer top'
     variable = group2
   [../]
   [./vacuum_group3]
     type = VacuumConcBC
-    boundary = 'fuel_bottom blanket_bottom fuel_top blanket_top outer'
+    boundary = 'bottom bottom_outer middle_outer top_outer top'
     variable = group3
   [../]
   [./vacuum_group4]
     type = VacuumConcBC
-    boundary = 'fuel_bottom blanket_bottom fuel_top blanket_top outer'
+    boundary = 'bottom bottom_outer middle_outer top_outer top'
     variable = group4
   [../]
   [./vacuum_group5]
     type = VacuumConcBC
-    boundary = 'fuel_bottom blanket_bottom fuel_top blanket_top outer'
+    boundary = 'bottom bottom_outer middle_outer top_outer top'
     variable = group5
   [../]
   [./vacuum_group6]
     type = VacuumConcBC
-    boundary = 'fuel_bottom blanket_bottom fuel_top blanket_top outer'
+    boundary = 'bottom bottom_outer middle_outer top_outer top'
     variable = group6
   [../]
 []
 
 [Executioner]
   type = Transient
-  end_time = 500
+  end_time = 50
+
+  verbose = true
+
+  automatic_scaling = true
+  compute_scaling_once = false
+
+  nl_rel_tol = 1e-20
+  nl_abs_tol = 1
 
   # nl_rel_tol = 1e-6
   # nl_abs_tol = 1e-6
@@ -453,7 +542,7 @@ ini_neut=1e14
   # petsc_options_value = 'test'
 
   nl_max_its = 20
-  l_max_its = 100
+  l_max_its = 50
 
   dtmin = 1e-6
   dtmax = 5
@@ -469,7 +558,7 @@ ini_neut=1e14
 []
 
 [Preconditioning]
-  [./FDP]
+  [./SMP]
     type = SMP
     full = true
   [../]
@@ -506,35 +595,35 @@ ini_neut=1e14
     variable = group6
     outputs = 'console exodus csv'
   [../]
-  [./temp_fuel]
+  [./temp_core]
     type = ElementAverageValue
     variable = temp
-    block = 'fuel'
+    block = 'core'
     outputs = 'exodus console csv'
   [../]
-  [./max_temp_fuel]
+  [./max_temp_core]
     type = ElementExtremeValue
     variable = temp
-    block = 'fuel'
+    block = 'core'
     value_type = 'max'
     outputs = 'exodus console csv'
   [../]
-  [./temp_blanket]
-    type = ElementAverageValue
-    variable = temp
-    block = 'blanket'
-    outputs = 'exodus console csv'
-  [../]
-  [./heat_fuel]
+  # [./temp_blanket]
+  #   type = ElementAverageValue
+  #   variable = temp
+  #   block = 'blanket'
+  #   outputs = 'exodus console csv'
+  # [../]
+  [./heat_core]
     type = ElmIntegTotFissHeatPostprocessor
-    block = 'fuel'
+    block = 'core'
     outputs = 'exodus'
   [../]
-  [./heat_blanket]
-    type = ElmIntegTotFissHeatPostprocessor
-    block = 'blanket'
-    outputs = 'exodus'
-  [../]
+  # [./heat_blanket]
+  #   type = ElmIntegTotFissHeatPostprocessor
+  #   block = 'blanket'
+  #   outputs = 'exodus'
+  # [../]
   [./heat]
     type = ElmIntegTotFissHeatPostprocessor
     outputs = 'csv'
@@ -542,12 +631,12 @@ ini_neut=1e14
   [./coreEndTemp]
     type = SideAverageValue
     variable = temp
-    boundary = 'fuel_top'
+    boundary = 'core_top'
     outputs = 'exodus console'
   [../]
   [./inlet_mean_temp]
     type = Receiver
-    default = 930
+    default = 923
     initialize_old = true
     execute_on = 'timestep_begin'
     outputs = 'csv console'
@@ -578,7 +667,7 @@ ini_neut=1e14
     type = TransientMultiApp
     app_type = MoltresApp
     execute_on = timestep_begin
-    positions = '200.0 200.0 0.0'
+    positions = '500.0 500.0 0.0'
     input_files = 'sub-hx.i'
   [../]
 []

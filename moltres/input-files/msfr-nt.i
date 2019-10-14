@@ -1,9 +1,9 @@
 flow_velocity=0 # cm/s
-pre_flow_velocity=112.75
-nt_scale=1     # neutron flux scaling factor
-pre_scale=1    # precursor scaling factor
-ini_temp=923     # initial temp
-diri_temp=923    # dirichlet BC temp
+pre_flow_velocity=0
+nt_scale=1e8     # neutron flux scaling factor
+pre_scale=1e8    # precursor scaling factor
+ini_temp=973     # initial temp
+diri_temp=973    # dirichlet BC temp
 ini_neut=1
 
 [GlobalParams]
@@ -20,7 +20,7 @@ ini_neut=1
 []
 
 [Mesh]
-  file = 'msfr-1-16-core.e'
+  file = 'msfr-1-16-core-10cm.e'
 [../]
 
 [Problem]
@@ -79,7 +79,7 @@ ini_neut=1
     order = FIRST
     family = LAGRANGE
     scaling = 1
-    initial_condition = 1200
+    initial_condition = 973
   [../]
 []
 
@@ -271,7 +271,7 @@ ini_neut=1
 [Materials]
   [./core]
     type = GenericMoltresMaterial
-    property_tables_root = '../xs-data/group/msfr_full_core_core_'
+    property_tables_root = '../data/xs-data/group/msfr_full_core_core_'
     interp_type = 'spline'
     prop_names = 'cp'
     prop_values = '1555'
@@ -302,7 +302,7 @@ ini_neut=1
   [../]
   [./blanket]
     type = GenericMoltresMaterial
-    property_tables_root = '../xs-data/group/msfr_full_core_blanket_'
+    property_tables_root = '../data/xs-data/group/msfr_full_core_blanket_'
     interp_type = 'spline'
     prop_names = 'cp'
     prop_values = '1555'
@@ -325,7 +325,7 @@ ini_neut=1
   [../]
   [./absorb]
     type = GenericMoltresMaterial
-    property_tables_root = '../xs-data/group/msfr_full_core_absorb_'
+    property_tables_root = '../data/xs-data/group/msfr_full_core_absorb_'
     interp_type = 'spline'
     prop_names = 'cp'
     prop_values = '1555'
@@ -333,7 +333,7 @@ ini_neut=1
   [../]
   [./struc]
     type = GenericMoltresMaterial
-    property_tables_root = '../xs-data/group/msfr_full_core_struc_'
+    property_tables_root = '../data/xs-data/group/msfr_full_core_struc_'
     interp_type = 'spline'
     prop_names = 'cp'
     prop_values = '1555'
@@ -341,7 +341,7 @@ ini_neut=1
   [../]
   [./hx]
     type = GenericMoltresMaterial
-    property_tables_root = '../xs-data/group/msfr_full_core_hx_'
+    property_tables_root = '../data/xs-data/group/msfr_full_core_hx_'
     interp_type = 'spline'
     prop_names = 'cp'
     prop_values = '1555'
@@ -349,7 +349,7 @@ ini_neut=1
   [../]
   [./inlet_outlet]
     type = GenericMoltresMaterial
-    property_tables_root = '../xs-data/group/msfr_full_core_inlet_'
+    property_tables_root = '../data/xs-data/group/msfr_full_core_inlet_'
     interp_type = 'spline'
     prop_names = 'cp'
     prop_values = '1555'
