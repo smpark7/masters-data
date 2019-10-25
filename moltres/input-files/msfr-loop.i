@@ -1,7 +1,7 @@
 flow_velocity=112.75 # cm/s
 pre_flow_velocity=112.75
-nt_scale=1#e-15     # neutron flux scaling factor
-pre_scale=1#e-9    # precursor scaling factor
+nt_scale=1e-15     # neutron flux scaling factor
+pre_scale=1e-9    # precursor scaling factor
 ini_temp=923     # initial temp
 diri_temp=923    # dirichlet BC temp
 ini_neut=1e14
@@ -33,37 +33,44 @@ ini_neut=1e14
   [./group1]
     order = FIRST
     family = LAGRANGE
-    # scaling = ${nt_scale}
+    scaling = ${nt_scale}
   [../]
   [./group2]
     order = FIRST
     family = LAGRANGE
-    # scaling = ${nt_scale}
+    scaling = ${nt_scale}
   [../]
   [./group3]
     order = FIRST
     family = LAGRANGE
-    # scaling = ${nt_scale}
+    scaling = ${nt_scale}
   [../]
   [./group4]
     order = FIRST
     family = LAGRANGE
-    # scaling = ${nt_scale}
+    scaling = ${nt_scale}
   [../]
   [./group5]
     order = FIRST
     family = LAGRANGE
-    # scaling = ${nt_scale}
+    scaling = ${nt_scale}
   [../]
   [./group6]
     order = FIRST
     family = LAGRANGE
-    # scaling = ${nt_scale}
+    scaling = ${nt_scale}
   [../]
   [./temp]
     order = FIRST
     family = LAGRANGE
-    # scaling = 1e-3
+    scaling = 1e2
+    block = 'core'
+  [../]
+  [./temp2]
+    order = FIRST
+    family = LAGRANGE
+    scaling = 1e0
+    block = 'blanket absorb hx inlet outlet top_ref bottom_ref outer_ref'
   [../]
 []
 
@@ -95,7 +102,7 @@ ini_neut=1e14
     multi_app = loopApp
     is_loopapp = false
     inlet_boundaries = 'core_bottom'
-    scaling = ${pre_scale}
+    # scaling = ${pre_scale}
     # jac_test = true
   [../]
 []
@@ -299,6 +306,10 @@ ini_neut=1e14
     type = MatINSTemperatureTimeDerivative
     variable = temp
   [../]
+  [./temp2_time_derivative]
+    type = MatINSTemperatureTimeDerivative
+    variable = temp2
+  [../]
   [./temp_cond]
     type = MatDiffusion
     variable = temp
@@ -327,6 +338,7 @@ ini_neut=1e14
     prop_names = 'cp'
     prop_values = '1555'
     block = 'core'
+    temperature = temp
   [../]
   # [./cp_fuel]
   #   type = DerivativeParsedMaterial
@@ -366,6 +378,7 @@ ini_neut=1e14
     prop_names = 'cp'
     prop_values = '1555'
     block = 'blanket'
+    temperature = temp2
   [../]
   # [./cp_blanket]
   #   type = DerivativeParsedMaterial
@@ -378,16 +391,16 @@ ini_neut=1e14
   [./rho_blanket]
     type = DerivativeParsedMaterial
     f_name = rho
-    function = '(4983.56 - .882 * temp) * .000001'    # kg cm-3
-    args = 'temp'
+    function = '(4983.56 - .882 * temp2) * .000001'    # kg cm-3
+    args = 'temp2'
     derivative_order = 1
     block = 'blanket'
   [../]
   [./k_blanket]
     type = ParsedMaterial
     f_name = k
-    function = '(0.928 + 8.397e-5 * temp) * .01'
-    args = 'temp'
+    function = '(0.928 + 8.397e-5 * temp2) * .01'
+    args = 'temp2'
     block = 'blanket'
   [../]
   [./absorb]
@@ -397,6 +410,7 @@ ini_neut=1e14
     prop_names = 'cp'
     prop_values = '1555'
     block = 'absorb'
+    temperature = temp2
   [../]
   [./struc]
     type = GenericMoltresMaterial
@@ -405,6 +419,7 @@ ini_neut=1e14
     prop_names = 'cp'
     prop_values = '1555'
     block = 'bottom_ref outer_ref top_ref'
+    temperature = temp2
   [../]
   [./hx]
     type = GenericMoltresMaterial
@@ -413,6 +428,7 @@ ini_neut=1e14
     prop_names = 'cp'
     prop_values = '1555'
     block = 'hx'
+    temperature = temp2
   [../]
   [./inlet_outlet]
     type = GenericMoltresMaterial
@@ -421,28 +437,29 @@ ini_neut=1e14
     prop_names = 'cp'
     prop_values = '1555'
     block = 'inlet outlet'
+    temperature = temp2
   [../]
   [./rho_inlet_outlet_hx]
     type = DerivativeParsedMaterial
     f_name = rho
-    function = '(4983.56 - .882 * temp) * .000001'    # kg cm-3
-    args = 'temp'
+    function = '(4983.56 - .882 * temp2) * .000001'    # kg cm-3
+    args = 'temp2'
     derivative_order = 1
     block = 'inlet outlet hx'
   [../]
   [./rho_struc]
     type = DerivativeParsedMaterial
     f_name = rho
-    function = '.01 + 1e-9 * temp'    # kg cm-3
-    args = 'temp'
+    function = '.01 + 1e-9 * temp2'    # kg cm-3
+    args = 'temp2'
     derivative_order = 1
     block = 'bottom_ref outer_ref top_ref'
   [../]
   [./rho_absorb]
     type = DerivativeParsedMaterial
     f_name = rho
-    function = '.00252 + 1e-9 * temp'    # kg cm-3
-    args = 'temp'
+    function = '.00252 + 1e-9 * temp2'    # kg cm-3
+    args = 'temp2'
     derivative_order = 1
     block = 'absorb'
   [../]
@@ -463,7 +480,7 @@ ini_neut=1e14
   #   value = ${diri_temp}
   # [../]
   [./temp_core_outer]
-    boundary = 'core_outer'
+    boundary = 'core_outer core_front core_back'
     type = NeumannBC
     variable = temp
     value = 0
@@ -524,14 +541,14 @@ ini_neut=1e14
 
   verbose = true
 
-  automatic_scaling = true
-  compute_scaling_once = false
+  # automatic_scaling = true
+  # compute_scaling_once = false
 
-  nl_rel_tol = 1e-20
-  nl_abs_tol = 1
+  # nl_rel_tol = 1e-20
+  # nl_abs_tol = 1
 
-  # nl_rel_tol = 1e-6
-  # nl_abs_tol = 1e-6
+  nl_rel_tol = 1e-15
+  nl_abs_tol = 1e0
 
   solve_type = 'NEWTON'
   petsc_options = '-snes_converged_reason -ksp_converged_reason -snes_linesearch_monitor'
