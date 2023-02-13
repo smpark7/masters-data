@@ -1,0 +1,12 @@
+fuel0 800
+fuel1 850
+fuel2 900
+fuel3 950
+fuel4 973
+fuel5 1000
+fuel6 1050
+fuel7 1100
+fuel8 1150
+fuel9 1200
+fuel10 1250
+fuel11 1300
